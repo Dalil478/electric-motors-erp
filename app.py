@@ -38,7 +38,7 @@ ALLOWED_BANK_METHODS = [
     "BankTransfer", # تحويل بنكي آخر
 ]
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "templates"), static_folder=os.path.join(BASE_DIR, "static"))
 app.config["JSON_AS_ASCII"] = False
 
 
