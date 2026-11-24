@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="theme-color" content="#0f172a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<link rel="manifest" href="/manifest.json" />
+<title>الكيتريك موتورز — Electric Motors ERP</title>
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --sidebar: #0f172a;
+    --sidebar-hover: #1e293b;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --primary: #0284c7;
+    --primary-dark: #0369a1;
+    --success: #059669;
+    --danger: #dc2626;
+    --warning: #d97706;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Login Overlay */
+  .login-screen {
+    position: fixed; inset: 0; background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0369a1 100%);
+    display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 300;
+  }
+  .login-card {
+    background: #fff; border-radius: 16px; width: 410px; max-width: 100%;
+    padding: 26px; box-shadow: 0 25px 50px rgba(0,0,0,.35);
+  }
+  .login-brand { text-align: center; margin-bottom: 18px; }
+  .login-brand h2 { font-size: 22px; font-weight: 800; color: #0f172a; }
+  .login-brand p { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .demo-creds {
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; font-size: 11.5px; color: #334155; margin-top: 14px; line-height: 1.65;
+  }
+
+  /* App Shell */
+  .app-shell { display: none; height: 100vh; width: 100vw; }
+  .app-shell.visible { display: flex; }
+
+  .sidebar {
+    width: 260px; background: var(--sidebar); color: #fff;
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .brand { padding: 18px; border-bottom: 1px solid #1e293b; }
+  .brand-title { font-size: 19px; font-weight: 800; color: #facc15; display: flex; align-items: center; gap: 8px; }
+  .brand-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+
+  .user-chip {
+    margin: 12px 12px 4px; padding: 10px 12px; background: #1e293b; border-radius: 10px; font-size: 12px;
+  }
+  .user-chip strong { display: block; color: #fff; font-size: 13px; }
+  .user-chip span { color: #38bdf8; font-weight: 700; font-size: 11px; }
+
+  .nav { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+  .nav-btn {
+    background: transparent; border: none; color: #cbd5e1; padding: 11px 13px;
+    border-radius: 9px; text-align: start; font-size: 13.5px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+  }
+  .nav-btn:hover { background: var(--sidebar-hover); color: #fff; }
+  .nav-btn.active { background: var(--primary); color: #fff; }
+  .nav-btn.hidden { display: none; }
+
+  .sidebar-footer { padding: 12px; border-top: 1px solid #1e293b; font-size: 11.5px; color: #94a3b8; }
+  .lan-box { background: #1e293b; padding: 8px 10px; border-radius: 8px; font-size: 11px; color: #facc15; margin-bottom: 8px; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .topbar h1 { font-size: 16.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .mobile-logout { display: none; }
+
+  .content { flex: 1; overflow-y: auto; padding: 18px 20px; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 15px; box-shadow: var(--shadow);
+  }
+  .kpi-label { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+  .kpi-val { font-size: 20px; font-weight: 800; margin-top: 5px; }
+  .kpi-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+  /* Live USD/SDG Card */
+  .rate-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: #fff; border-radius: var(--radius); padding: 16px;
+    box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .rate-big { font-size: 24px; font-weight: 800; color: #facc15; margin: 6px 0; }
+  .rate-meta { font-size: 11.5px; color: #cbd5e1; margin-bottom: 10px; }
+  .conv-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 8px; }
+  .conv-row input { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25); color: #fff; font-weight: 700; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .pos-layout { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+
+  .btn {
+    border: none; border-radius: 8px; padding: 9px 13px; font-size: 13px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-warning { background: #f59e0b; color: #0f172a; }
+  .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+  .btn-dark { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  input, select {
+    width: 100%; padding: 9px 11px; border: 1px solid #cbd5e1;
+    border-radius: 8px; font-size: 13.5px; background: #fff; color: var(--text);
+  }
+  input:focus, select:focus { outline: 2px solid rgba(2,132,199,.25); border-color: var(--primary); }
+  label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+  .field { margin-bottom: 11px; }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  th, td { text-align: start; padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  th { font-size: 11px; color: var(--muted); background: #f8fafc; font-weight: 700; white-space: nowrap; }
+
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .b-green { background: #dcfce7; color: #166534; }
+  .b-amber { background: #fef3c7; color: #92400e; }
+  .b-red { background: #fee2e2; color: #991b1b; }
+  .b-blue { background: #e0f2fe; color: #075985; }
+  .b-purple { background: #ede9fe; color: #5b21b6; }
+  .b-gray { background: #e2e8f0; color: #334155; }
+
+  .prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 11px; margin-top: 12px; }
+  .prod-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .prod-name { font-weight: 700; font-size: 13px; margin: 6px 0; line-height: 1.35; }
+  .prod-price { font-size: 15px; font-weight: 800; color: var(--primary); margin: 6px 0 10px; }
+
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .seg button {
+    padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px;
+    background: #f8fafc; font-weight: 700; font-size: 12.5px; cursor: pointer;
+  }
+  .seg button.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+  .inst-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 9px; padding: 12px; margin-bottom: 12px; }
+  .bank-panel { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 9px; padding: 11px 12px; margin-bottom: 12px; }
+  .due-banner {
+    background: #e0f2fe; color: #0369a1; padding: 12px; border-radius: 9px;
+    font-weight: 800; font-size: 15px; display: flex; justify-content: space-between; margin-bottom: 12px;
+  }
+  .rem-preview {
+    background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; margin-bottom: 12px;
+  }
+  .rem-preview.warn { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+
+  .progress { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 4px; }
+  .progress-bar { height: 100%; background: var(--success); }
+
+  /* Mobile Bottom Navigation (hidden on desktop) */
+  .bottom-nav {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid var(--border);
+    padding: 6px 4px 8px; z-index: 90; box-shadow: 0 -2px 10px rgba(15,23,42,.08);
+  }
+  .bnav-btn {
+    background: none; border: none; color: var(--muted); font-size: 10.5px; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; flex: 1;
+  }
+  .bnav-btn .ico { font-size: 19px; }
+  .bnav-btn.active { color: var(--primary); }
+  .bnav-btn.hidden { display: none; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(15,23,42,.55);
+    display: none; align-items: center; justify-content: center; padding: 12px; z-index: 200;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; width: 470px; max-width: 100%;
+    max-height: 90vh; overflow-y: auto; padding: 18px; box-shadow: 0 20px 40px rgba(0,0,0,.25);
+  }
+  .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .modal-head h3 { font-size: 16px; font-weight: 800; }
+
+  .toast {
+    position: fixed; bottom: 76px; inset-inline-end: 16px; background: #0f172a; color: #fff;
+    padding: 11px 16px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    display: none; z-index: 400; box-shadow: 0 10px 25px rgba(0,0,0,.25); max-width: 90vw;
+  }
+  .toast.show { display: block; }
+
+  /* ==================== RESPONSIVE BREAKPOINT (PHONES & TABLETS) ==================== */
+  @media (max-width: 860px) {
+    .sidebar { display: none; }
+    .bottom-nav { display: flex; }
+    .mobile-logout { display: inline-flex; }
+    .topbar { padding: 10px 14px; background: var(--sidebar); color: #fff; border-bottom: none; }
+    .topbar h1 { color: #facc15; font-size: 15.5px; }
+    .topbar .btn-outline { background: #1e293b; color: #fff; border-color: #334155; }
+    .content { padding: 12px 12px 84px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .kpi-val { font-size: 17px; }
+    .grid-2, .pos-layout { grid-template-columns: 1fr; }
+    .prod-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
+    .row-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 420px) {
+    .prod-grid { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body * { visibility: hidden; }
+    #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
+    #receiptPrintArea { position: fixed; inset: 0; width: 100%; padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN SCREEN ==================== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+      <button class="btn btn-outline btn-sm" onclick="toggleLang()" id="loginLangBtn">English</button>
+    </div>
+    <div class="login-brand">
+      <h2>⚡ <span data-i18n="brand_name">الكيتريك موتورز</span></h2>
+      <p data-i18n="login_sub">نظام المبيعات والمخزون والتمويل البنكي (سحابي متجاوب)</p>
+    </div>
+    <div class="field">
+      <label data-i18n="username">اسم المستخدم</label>
+      <input type="text" id="loginUser" value="admin" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <div class="field">
+      <label data-i18n="password">كلمة المرور</label>
+      <input type="password" id="loginPass" value="admin123" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:11px;font-size:14px;" onclick="doLogin()" data-i18n="login_btn">تسجيل الدخول</button>
+    <div class="demo-creds">
+      <strong data-i18n="default_accounts">الحسابات الافتراضية:</strong><br/>
+      • <strong>Admin:</strong> <code>admin</code> / <code>admin123</code><br/>
+      • <strong>Salesman:</strong> <code>sales1</code> / <code>1234</code><br/>
+      • <strong>Finance:</strong> <code>finance1</code> / <code>1234</code>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MAIN APP SHELL ==================== -->
+<div class="app-shell" id="appShell">
+  <!-- Desktop Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">⚡ <span data-i18n="brand_name">الكيتريك موتورز</span></div>
+      <div class="brand-sub" data-i18n="brand_sub">نسخة الويب السحابية v3 • (ج.س)</div>
+    </div>
+
+    <div class="user-chip">
+      <strong id="chipName">-</strong>
+      <span id="chipRole">-</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" id="nav-dashboard" onclick="switchView('dashboard')">📊 <span data-i18n="nav_dashboard">لوحة التحكم</span></button>
+      <button class="nav-btn" id="nav-pos" onclick="switchView('pos')">🛒 <span data-i18n="nav_pos">نقطة البيع والمبيعات</span></button>
+      <button class="nav-btn" id="nav-finance" onclick="switchView('finance')">💳 <span data-i18n="nav_finance">المالية والأقساط</span></button>
+      <button class="nav-btn" id="nav-inventory" onclick="switchView('inventory')">📦 <span data-i18n="nav_inventory">المخزن والبضاعة</span></button>
+      <button class="nav-btn" id="nav-users" onclick="switchView('users')">🔐 <span data-i18n="nav_users">المستخدمون</span></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="lan-box">
+        <strong data-i18n="bankak_acc_lbl">حساب بنكك:</strong><br/>
+        1234567 — الكيتريك موتورز
+      </div>
+      <button class="btn btn-dark btn-sm" style="width:100%;" onclick="doLogout()" data-i18n="logout">تسجيل خروج</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 id="pageTitle">⚡ الكيتريك موتورز</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="toggleLang()" id="topLangBtn">EN</button>
+        <button class="btn btn-outline btn-sm" onclick="refreshAll()">↻</button>
+        <button class="btn btn-primary btn-sm" id="btnBackupDb" onclick="downloadBackup()">💾 DB</button>
+        <button class="btn btn-danger btn-sm mobile-logout" onclick="doLogout()" data-i18n="logout">خروج</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+      <section id="view-dashboard" class="view active">
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="grid-2">
+          <div class="rate-card">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <span style="font-size:13px;font-weight:700;color:#38bdf8;" data-i18n="live_rate_title">💱 سعر الصرف: الدولار مقابل الجنيه السوداني (USD ↔ SDG)</span>
+                <span class="badge b-amber" id="rateSourceBadge">Saved</span>
+              </div>
+              <div class="rate-big" id="liveRateDisplay">1 USD = 601.5 SDG</div>
+              <div class="rate-meta" id="rateUpdatedMeta">-</div>
+            </div>
+
+            <div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <button class="btn btn-warning btn-sm" onclick="fetchLiveRate()" data-i18n="fetch_live_btn">🌐 تحديث السعر المباشر</button>
+                <div id="adminRateEditWrap" style="display:none;gap:6px;align-items:center;flex:1;">
+                  <input type="number" id="manualRateInput" step="0.5" placeholder="سعر السوق..." style="padding:5px 8px;height:30px;max-width:130px;background:#fff;color:#0f172a;" />
+                  <button class="btn btn-success btn-sm" onclick="saveManualRate()" data-i18n="save_rate_btn">حفظ</button>
+                </div>
+              </div>
+              <div class="conv-row">
+                <input type="number" id="convUsd" value="100" oninput="convertFromUsd()" placeholder="USD ($)" />
+                <span style="font-weight:800;color:#facc15;">⇄</span>
+                <input type="number" id="convSdg" oninput="convertFromSdg()" placeholder="SDG (ج.س)" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:15px;margin-bottom:10px;" data-i18n="low_stock_title">⚠️ تنبيهات انخفاض المخزون (≤ 3 قطع)</h3>
+            <div id="lowStockList" style="font-size:13px;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:12px;" data-i18n="recent_invoices">أحدث الفواتير والمبيعات</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="th_invoice">رقم الفاتورة</th>
+                  <th data-i18n="th_date">التاريخ</th>
+                  <th data-i18n="th_customer">العميل</th>
+                  <th data-i18n="th_issued_by">محرر الفاتورة</th>
+                  <th data-i18n="th_mode">النوع</th>
+                  <th data-i18n="th_total">الإجمالي</th>
+                  <th data-i18n="th_paid">المدفوع</th>
+                  <th data-i18n="th_remaining">المتبقي</th>
+                  <th data-i18n="th_bank">البنك</th>
+                  <th data-i18n="th_receipt">الفاتورة</th>
+                </tr>
+              </thead>
+              <tbody id="recentSalesBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 2: POS & SALES ==================== -->
+      <section id="view-pos" class="view">
+        <div class="pos-layout">
+          <div class="card">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="posSearch" style="flex:1;min-width:160px;" data-i18n-ph="search_ph" placeholder="ابحث عن موتور، طلمبة، انفيرتر..." oninput="renderPosProducts()" />
+              <select id="posCatFilter" style="width:165px;" onchange="renderPosProducts()">
+                <option value="ALL" data-i18n="all_cats">كل الفئات</option>
+                <option value="Electric Motors">Electric Motors</option>
+                <option value="Water Pumps">Water Pumps</option>
+                <option value="Solar Pumps">Solar Pumps</option>
+                <option value="Inverters & VFD">Inverters &amp; VFD</option>
+                <option value="Solar Panels">Solar Panels</option>
+                <option value="Batteries">Batteries</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </div>
+            <div class="prod-grid" id="posProdGrid"></div>
+          </div>
+
+          <div class="card" id="checkoutCard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h3 style="font-size:15px;" data-i18n="cart_title">سلة المبيعات (ج.س)</h3>
+              <button class="btn btn-outline btn-sm" onclick="clearCart()" data-i18n="clear">مسح</button>
+            </div>
+
+            <div id="cartList" style="max-height:190px;overflow-y:auto;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:8px;"></div>
+
+            <div class="row-2">
+              <div class="field"><label data-i18n="cust_name">اسم العميل *</label><input type="text" id="custName" /></div>
+              <div class="field"><label data-i18n="cust_phone">رقم الهاتف (واتساب)</label><input type="tel" id="custPhone" placeholder="2499xxxxxxxx" /></div>
+            </div>
+
+            <label data-i18n="sale_mode">طريقة البيع</label>
+            <div class="seg">
+              <button id="btnModeFull" class="active" onclick="setSaleMode('FULL')" data-i18n="full_pay">دفع كامل</button>
+              <button id="btnModeInst" onclick="setSaleMode('INSTALLMENT')" data-i18n="installments_mode">أقساط</button>
+            </div>
+
+            <div id="instBox" class="inst-box" style="display:none;">
+              <div class="row-2">
+                <div class="field"><label data-i18n="down_pay">المقدم (ج.س)</label><input type="number" id="downPay" value="0" min="0" oninput="recalcCart()" /></div>
+                <div class="field">
+                  <label data-i18n="duration_m">الأشهر التقديرية</label>
+                  <select id="instMonths" onchange="recalcCart()">
+                    <option value="3">3</option><option value="6" selected>6</option><option value="9">9</option>
+                    <option value="12">12</option><option value="18">18</option><option value="24">24</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:6px;"><label data-i18n="markup_pct">نسبة المرابحة (%)</label><input type="number" id="instMarkup" value="15" min="0" step="1" oninput="recalcCart()" /></div>
+              <div id="instPreview" style="font-size:12px;font-weight:700;color:#92400e;"></div>
+            </div>
+
+            <div class="bank-panel">
+              <div class="field">
+                <label data-i18n="bank_system">نظام الدفع البنكي السوداني *</label>
+                <select id="bankMethod">
+                  <option value="Bankak">Bankak — بنكك (بنك الخرطوم)</option>
+                  <option value="Fawry">Fawry — فوري (بنك فيصل)</option>
+                  <option value="Omdurman">Omdurman National — بنك أم درمان / أووكاش</option>
+                  <option value="BankTransfer">Other Bank Transfer — تحويل بنكي آخر</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label data-i18n="trx_id">رقم العملية / الإشعار البنكي *</label>
+                <input type="text" id="bankTrx" placeholder="e.g. BNK-2026-88412" />
+              </div>
+            </div>
+
+            <div class="due-banner">
+              <span id="dueLabel">المطلوب الآن:</span>
+              <span id="dueAmount">0 ج.س</span>
+            </div>
+
+            <button class="btn btn-success" style="width:100%;padding:12px;font-size:14px;" onclick="completeSale()" data-i18n="complete_sale">
+              ✔ إتمام البيع وإصدار الفاتورة
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 3: FINANCE & INSTALLMENTS ==================== -->
+      <section id="view-finance" class="view">
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+            <h3 style="font-size:15px;" data-i18n="inst_contracts">عقود الأقساط (تحكم يدوي في الدفعات)</h3>
+            <select id="instFilter" style="width:155px;" onchange="renderFinance()">
+              <option value="ALL" data-i18n="all_contracts">كل العقود</option>
+              <option value="ACTIVE" data-i18n="active_only">النشطة فقط</option>
+              <option value="PAID" data-i18n="paid_only">المسددة بالكامل</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="th_invoice">رقم الفاتورة</th>
+                  <th data-i18n="th_customer">العميل</th>
+                  <th data-i18n="th_issued_by">محرر الفاتورة</th>
+                  <th data-i18n="th_total">الإجمالي</th>
+                  <th data-i18n="th_progress">المدفوع / النسبة</th>
+                  <th data-i18n="th_remaining">المتبقي</th>
+                  <th data-i18n="th_status">الحالة</th>
+                  <th data-i18n="th_action">إجراء</th>
+                </tr>
+              </thead>
+              <tbody id="instTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+            <h3 style="font-size:15px;" data-i18n="pay_ledger">سجل المدفوعات البنكية</h3>
+            <div style="display:flex;gap:8px;">
+              <select id="payFilter" style="width:145px;" onchange="renderFinance()">
+                <option value="ALL" data-i18n="all_banks">كل البنوك</option>
+                <option value="Bankak">Bankak (بنكك)</option>
+                <option value="Fawry">Fawry (فوري)</option>
+                <option value="Omdurman">Omdurman</option>
+                <option value="BankTransfer">Bank Transfer</option>
+              </select>
+              <button class="btn btn-primary btn-sm" id="btnExportCsv" onclick="downloadCsv()" data-i18n="export_csv">📥 CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="th_date">التاريخ</th>
+                  <th data-i18n="th_invoice">الفاتورة</th>
+                  <th data-i18n="th_customer">العميل</th>
+                  <th data-i18n="th_type">النوع</th>
+                  <th data-i18n="th_amount">المبلغ</th>
+                  <th data-i18n="th_bank">البنك</th>
+                  <th data-i18n="th_trx">الإشعار</th>
+                  <th data-i18n="th_recorded_by">المستلم</th>
+                </tr>
+              </thead>
+              <tbody id="payTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 4: ADMIN — INVENTORY ==================== -->
+      <section id="view-inventory" class="view">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;">
+            <div>
+              <h3 style="font-size:15px;" data-i18n="inv_title">إدارة المخزن والبضاعة (للمدير فقط)</h3>
+              <p style="font-size:12px;color:var(--muted);" data-i18n="inv_sub">إضافة المنتجات وتعديل الأسعار وتوريد المخزون.</p>
+            </div>
+            <button class="btn btn-success btn-sm" onclick="openProductModal()" data-i18n="add_product">+ إضافة منتج</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th data-i18n="th_product">اسم المنتج</th>
+                  <th data-i18n="th_category">الفئة</th>
+                  <th data-i18n="th_cost">التكلفة</th>
+                  <th data-i18n="th_sell">سعر البيع</th>
+                  <th data-i18n="th_stock">الكمية</th>
+                  <th data-i18n="th_status">الحالة</th>
+                  <th data-i18n="th_actions">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VIEW 5: ADMIN — USERS ==================== -->
+      <section id="view-users" class="view">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px;flex-wrap:wrap;">
+            <div>
+              <h3 style="font-size:15px;" data-i18n="users_title">إدارة المستخدمين والصلاحيات (للمدير فقط)</h3>
+              <p style="font-size:12px;color:var(--muted);" data-i18n="users_sub">التحكم في صلاحيات المدير، مناديب المبيعات، والمالية.</p>
+            </div>
+            <button class="btn btn-success btn-sm" onclick="openUserModal()" data-i18n="add_user">+ إضافة مستخدم</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="username">المستخدم</th>
+                  <th data-i18n="full_name">الاسم الكامل</th>
+                  <th data-i18n="role">الصلاحية</th>
+                  <th data-i18n="th_status">الحالة</th>
+                  <th data-i18n="th_date">الإنشاء</th>
+                  <th data-i18n="th_actions">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="bnav-btn active" id="bnav-dashboard" onclick="switchView('dashboard')"><span class="ico">📊</span><span data-i18n="nav_dashboard">الرئيسية</span></button>
+    <button class="bnav-btn" id="bnav-pos" onclick="switchView('pos')"><span class="ico">🛒</span><span data-i18n="nav_pos">البيع</span></button>
+    <button class="bnav-btn" id="bnav-finance" onclick="switchView('finance')"><span class="ico">💳</span><span data-i18n="nav_finance">الأقساط</span></button>
+    <button class="bnav-btn" id="bnav-inventory" onclick="switchView('inventory')"><span class="ico">📦</span><span data-i18n="nav_inventory">المخزن</span></button>
+    <button class="bnav-btn" id="bnav-users" onclick="switchView('users')"><span class="ico">🔐</span><span data-i18n="nav_users">الحسابات</span></button>
+  </nav>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal-backdrop" id="productModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="prodModalTitle">إضافة منتج</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('productModal')">✕</button>
+    </div>
+    <input type="hidden" id="editProdId" />
+    <div class="row-2">
+      <div class="field"><label>SKU *</label><input type="text" id="pSku" placeholder="MTR-15HP" /></div>
+      <div class="field">
+        <label data-i18n="th_category">الفئة</label>
+        <select id="pCat">
+          <option>Electric Motors</option><option>Water Pumps</option><option>Solar Pumps</option>
+          <option>Inverters & VFD</option><option>Solar Panels</option><option>Batteries</option><option>Accessories</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label data-i18n="th_product">اسم المنتج *</label><input type="text" id="pName" /></div>
+    <div class="row-2">
+      <div class="field"><label data-i18n="th_cost">التكلفة (ج.س)</label><input type="number" id="pCost" value="0" /></div>
+      <div class="field"><label data-i18n="th_sell">سعر البيع (ج.س)</label><input type="number" id="pSell" value="0" /></div>
+    </div>
+    <div class="field"><label data-i18n="th_stock">الكمية بالمخزن</label><input type="number" id="pStock" value="10" /></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button class="btn btn-outline" onclick="closeModal('productModal')" data-i18n="cancel">إلغاء</button>
+      <button class="btn btn-success" onclick="saveProduct()" data-i18n="save">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="payModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 data-i18n="record_inst_pay">تسجيل دفعة قسط (مبلغ مخصص)</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('payModal')">✕</button>
+    </div>
+    <input type="hidden" id="payInstId" />
+    <input type="hidden" id="payInstRemRaw" />
+    <div id="payModalInfo" style="background:#f8fafc;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;"></div>
+    <div class="field">
+      <label data-i18n="enter_custom_amt">أدخل المبلغ المدفوع (ج.س) *</label>
+      <input type="number" id="payInstAmt" min="1" oninput="updateRemainingPreview()" />
+    </div>
+    <div id="remPreviewBox" class="rem-preview"></div>
+    <div class="field">
+      <label data-i18n="bank_system">نظام الدفع البنكي السوداني *</label>
+      <select id="payInstMethod">
+        <option value="Bankak">Bankak — بنكك (بنك الخرطوم)</option>
+        <option value="Fawry">Fawry — فوري (بنك فيصل)</option>
+        <option value="Omdurman">Omdurman National — بنك أم درمان / أووكاش</option>
+        <option value="BankTransfer">Other Bank Transfer — تحويل بنكي آخر</option>
+      </select>
+    </div>
+    <div class="field"><label data-i18n="trx_id">رقم العملية / الإشعار البنكي *</label><input type="text" id="payInstTrx" placeholder="BNK-..." /></div>
+    <div class="field"><label data-i18n="notes">ملاحظات</label><input type="text" id="payInstNotes" /></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button class="btn btn-outline" onclick="closeModal('payModal')" data-i18n="cancel">إلغاء</button>
+      <button class="btn btn-success" onclick="submitInstallmentPayment()" data-i18n="confirm_pay">✔ تأكيد الدفع</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="userModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="userModalTitle">إضافة مستخدم</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('userModal')">✕</button>
+    </div>
+    <input type="hidden" id="editUserId" />
+    <div class="field"><label data-i18n="username">اسم المستخدم *</label><input type="text" id="uName" /></div>
+    <div class="field"><label data-i18n="full_name">الاسم الكامل *</label><input type="text" id="uFull" /></div>
+    <div class="field">
+      <label data-i18n="role">الدور / الصلاحية</label>
+      <select id="uRole">
+        <option value="salesman">Salesman — مندوب مبيعات</option>
+        <option value="finance">Finance — محاسب / مالية</option>
+        <option value="admin">Admin — مدير النظام</option>
+      </select>
+    </div>
+    <div class="field"><label data-i18n="password">كلمة المرور</label><input type="password" id="uPass" /></div>
+    <div class="field">
+      <label data-i18n="th_status">الحالة</label>
+      <select id="uActive"><option value="1">Active — نشط</option><option value="0">Disabled — موقوف</option></select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+      <button class="btn btn-outline" onclick="closeModal('userModal')" data-i18n="cancel">إلغاء</button>
+      <button class="btn btn-success" onclick="saveUser()" data-i18n="save">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="receiptModal">
+  <div class="modal" style="width:540px;">
+    <div class="modal-head">
+      <h3 data-i18n="invoice_receipt">الفاتورة والإيصال</h3>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('receiptModal')">✕</button>
+    </div>
+    <div id="receiptPrintArea" style="border:1px solid var(--border);border-radius:10px;padding:15px;background:#fff;"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn btn-success" onclick="shareWhatsApp()">📲 واتساب</button>
+      <button class="btn btn-primary" onclick="window.print()" data-i18n="print">🖨 طباعة</button>
+      <button class="btn btn-outline" onclick="closeModal('receiptModal')" data-i18n="close">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const I18N = {
+  ar: {
+    brand_name: "الكيتريك موتورز",
+    login_sub: "نظام المبيعات والمخزون والتمويل البنكي (سحابي متجاوب)",
+    username: "اسم المستخدم", password: "كلمة المرور", login_btn: "تسجيل الدخول",
+    default_accounts: "الحسابات الافتراضية:", brand_sub: "نسخة الويب السحابية v3 • (ج.س)",
+    nav_dashboard: "الرئيسية", nav_pos: "البيع", nav_finance: "الأقساط",
+    nav_inventory: "المخزن", nav_users: "الحسابات", bankak_acc_lbl: "حساب بنكك:",
+    logout: "خروج", live_rate_title: "💱 سعر الصرف: الدولار مقابل الجنيه السوداني (USD ↔ SDG)",
+    fetch_live_btn: "🌐 تحديث السعر المباشر", save_rate_btn: "حفظ",
+    low_stock_title: "⚠️ تنبيهات انخفاض المخزون (≤ 3 قطع)", recent_invoices: "أحدث الفواتير والمبيعات",
+    th_invoice: "رقم الفاتورة", th_date: "التاريخ", th_customer: "العميل", th_issued_by: "محرر الفاتورة",
+    th_mode: "النوع", th_total: "الإجمالي", th_paid: "المدفوع", th_remaining: "المتبقي",
+    th_bank: "البنك", th_receipt: "الفاتورة", th_progress: "المدفوع / النسبة", th_status: "الحالة",
+    th_action: "إجراء", th_type: "النوع", th_amount: "المبلغ", th_trx: "الإشعار",
+    th_recorded_by: "المستلم", th_product: "اسم المنتج", th_category: "الفئة",
+    th_cost: "التكلفة", th_sell: "سعر البيع", th_stock: "الكمية", th_actions: "إجراءات",
+    search_ph: "ابحث عن موتور، طلمبة، انفيرتر...", all_cats: "كل الفئات",
+    cart_title: "سلة المبيعات (ج.س)", clear: "مسح", cust_name: "اسم العميل *", cust_phone: "رقم الهاتف (واتساب)",
+    sale_mode: "طريقة البيع", full_pay: "دفع كامل", installments_mode: "أقساط",
+    down_pay: "المقدم (ج.س)", duration_m: "الأشهر التقديرية", markup_pct: "نسبة المرابحة (%)",
+    bank_system: "نظام الدفع البنكي السوداني *", trx_id: "رقم العملية / الإشعار البنكي *",
+    complete_sale: "✔ إتمام البيع وإصدار الفاتورة",
+    inst_contracts: "عقود الأقساط (تحكم يدوي في الدفعات)",
+    all_contracts: "كل العقود", active_only: "النشطة فقط", paid_only: "المسددة بالكامل",
+    pay_ledger: "سجل المدفوعات البنكية", all_banks: "كل البنوك", export_csv: "📥 CSV",
+    inv_title: "إدارة المخزن والبضاعة (للمدير فقط)", inv_sub: "إضافة المنتجات وتعديل الأسعار وتوريد المخزون.",
+    add_product: "+ إضافة منتج", users_title: "إدارة المستخدمين والصلاحيات (للمدير فقط)",
+    users_sub: "التحكم في صلاحيات المدير، مناديب المبيعات، والمالية.", add_user: "+ إضافة مستخدم",
+    full_name: "الاسم الكامل", role: "الصلاحية", cancel: "إلغاء", save: "حفظ", close: "إغلاق", print: "🖨 طباعة",
+    record_inst_pay: "تسجيل دفعة قسط (مبلغ مخصص)", enter_custom_amt: "أدخل المبلغ المدفوع (ج.س) *",
+    notes: "ملاحظات", confirm_pay: "✔ تأكيد الدفع", invoice_receipt: "الفاتورة والإيصال",
+    kpi_sales: "إجمالي المبيعات", kpi_collected: "إجمالي المحصل",
+    kpi_receivable: "الأقساط المتبقية", kpi_stock: "قيمة المخزون", kpi_low: "تنبيهات المخزون (≤ 3)",
+    due_full: "المطلوب الآن (كامل):", due_down: "المطلوب الآن (المقدم):",
+    pay_btn: "💳 دفع", view_btn: "عرض",
+    rem_after: "المتبقي على العميل بعد هذه الدفعة:",
+    rem_zero: "هذه الدفعة تسدد العقد بالكامل! المتبقي: 0 ج.س",
+    rem_over: "المبلغ المدخل أكبر من المبلغ المتبقي!"
+  },
+  en: {
+    brand_name: "Electric Motors",
+    login_sub: "Responsive Cloud ERP — Sales, Stock & Bank Finance",
+    username: "Username", password: "Password", login_btn: "Sign In",
+    default_accounts: "Default Accounts:", brand_sub: "Cloud Web App v3 • (SDG)",
+    nav_dashboard: "Dashboard", nav_pos: "POS", nav_finance: "Installments",
+    nav_inventory: "Stock", nav_users: "Users", bankak_acc_lbl: "Bankak Account:",
+    logout: "Logout", live_rate_title: "💱 Live Exchange Rate: USD ↔ SDG",
+    fetch_live_btn: "🌐 Fetch Live Rate", save_rate_btn: "Save",
+    low_stock_title: "⚠️ Low Stock Alerts (≤ 3 units)", recent_invoices: "Recent Invoices & Sales",
+    th_invoice: "Invoice #", th_date: "Date", th_customer: "Customer", th_issued_by: "Issued By",
+    th_mode: "Mode", th_total: "Total", th_paid: "Paid", th_remaining: "Remaining",
+    th_bank: "Bank", th_receipt: "Receipt", th_progress: "Progress", th_status: "Status",
+    th_action: "Action", th_type: "Type", th_amount: "Amount", th_trx: "Trx ID",
+    th_recorded_by: "Recorded By", th_product: "Product", th_category: "Category",
+    th_cost: "Cost", th_sell: "Sell Price", th_stock: "Stock", th_actions: "Actions",
+    search_ph: "Search motors, pumps, inverters...", all_cats: "All Categories",
+    cart_title: "Checkout Cart (SDG)", clear: "Clear", cust_name: "Customer Name *", cust_phone: "Phone (WhatsApp)",
+    sale_mode: "Sale Mode", full_pay: "Full Payment", installments_mode: "Installments",
+    down_pay: "Down Payment (SDG)", duration_m: "Target Months", markup_pct: "Markup (%)",
+    bank_system: "Sudanese Bank System *", trx_id: "Bank Reference (Trx ID) *",
+    complete_sale: "✔ Complete Sale & Issue Invoice",
+    inst_contracts: "Installment Contracts (Manual Payment Control)",
+    all_contracts: "All Contracts", active_only: "Active Only", paid_only: "Fully Paid",
+    pay_ledger: "Bank Payment Ledger", all_banks: "All Banks", export_csv: "📥 CSV",
+    inv_title: "Store Inventory (Admin Only)", inv_sub: "Add products, edit SDG prices, and restock.",
+    add_product: "+ Add Product", users_title: "Users & Privileges (Admin Only)",
+    users_sub: "Manage Admin, Salesman, and Finance accounts.", add_user: "+ Add User",
+    full_name: "Full Name", role: "Role", cancel: "Cancel", save: "Save", close: "Close", print: "🖨 Print",
+    record_inst_pay: "Record Custom Installment Payment", enter_custom_amt: "Enter Amount Paid (SDG) *",
+    notes: "Notes", confirm_pay: "✔ Confirm Payment", invoice_receipt: "Invoice & Receipt",
+    kpi_sales: "Total Sales Contracted", kpi_collected: "Total Collected",
+    kpi_receivable: "Installments Receivable", kpi_stock: "Store Stock Value", kpi_low: "Low Stock (≤ 3)",
+    due_full: "Due Now (Full):", due_down: "Due Now (Down Payment):",
+    pay_btn: "💳 Pay", view_btn: "View",
+    rem_after: "After this payment, customer will have left to pay:",
+    rem_zero: "This payment FULLY PAYS OFF the contract! Remaining: 0 SDG",
+    rem_over: "Amount exceeds remaining balance!"
+  }
+};
+
+let lang = localStorage.getItem('em_cloud_lang') || 'ar';
+let token = localStorage.getItem('em_cloud_token') || '';
+let currentUser = null;
+let state = { dashboard: null, products: [], installments: [], payments: [], users: [], cart: [], saleMode: 'FULL', usdRate: 601.5, lastReceipt: null };
+
+const t = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+const fmt = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) + (lang === 'ar' ? ' ج.س' : ' SDG');
+const fmtUsd = sdg => '$' + (Number(sdg || 0) / (state.usdRate || 601.5)).toLocaleString('en-US', { maximumFractionDigits: 1 });
+
+function bankLabel(code) {
+  const m = { Bankak: lang==='ar'?'بنكك':'Bankak', Fawry: lang==='ar'?'فوري':'Fawry', Omdurman: lang==='ar'?'أم درمان':'Omdurman', BankTransfer: lang==='ar'?'تحويل بنكي':'Bank Transfer' };
+  return m[code] || code;
+}
+function roleLabel(role) {
+  const m = { admin: lang==='ar'?'مدير النظام':'Admin', salesman: lang==='ar'?'مندوب مبيعات':'Salesman', finance: lang==='ar'?'مالية':'Finance' };
+  return m[role] || role;
+}
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('loginLangBtn').textContent = lang === 'ar' ? 'English' : 'العربية';
+  document.getElementById('topLangBtn').textContent = lang === 'ar' ? 'EN' : 'ع';
+  document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (I18N[lang][k]) el.textContent = I18N[lang][k]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { const k = el.getAttribute('data-i18n-ph'); if (I18N[lang][k]) el.placeholder = I18N[lang][k]; });
+  if (currentUser) {
+    document.getElementById('chipRole').textContent = roleLabel(currentUser.role);
+    renderDashboard(); renderPosProducts(); renderCart(); renderFinance(); renderAdmin(); renderUsers();
+  }
+}
+function toggleLang() { lang = lang === 'en' ? 'ar' : 'en'; localStorage.setItem('em_cloud_lang', lang); applyLang(); }
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+async function api(url, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['X-Auth-Token'] = token;
+  const res = await fetch(url, { ...opts, headers });
+  const data = await res.json();
+  if (res.status === 401 && !url.includes('/api/auth/login')) { doLogout(true); throw new Error('Session expired.'); }
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function doLogin() {
+  try {
+    const res = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: document.getElementById('loginUser').value.trim(), password: document.getElementById('loginPass').value }) });
+    token = res.token; currentUser = res.user;
+    localStorage.setItem('em_cloud_token', token);
+    enterApp();
+  } catch (err) { showToast(err.message); }
+}
+
+async function tryRestoreSession() {
+  if (!token) return;
+  try { currentUser = await api('/api/auth/me'); enterApp(); } catch (e) { token = ''; localStorage.removeItem('em_cloud_token'); }
+}
+
+function enterApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').classList.add('visible');
+  document.getElementById('chipName').textContent = currentUser.full_name;
+  document.getElementById('chipRole').textContent = roleLabel(currentUser.role);
+
+  const isAdmin = currentUser.role === 'admin';
+  const canPos = isAdmin || currentUser.role === 'salesman';
+  const canExport = isAdmin || currentUser.role === 'finance';
+
+  ['nav-pos', 'bnav-pos'].forEach(id => document.getElementById(id).classList.toggle('hidden', !canPos));
+  ['nav-inventory', 'bnav-inventory', 'nav-users', 'bnav-users'].forEach(id => document.getElementById(id).classList.toggle('hidden', !isAdmin));
+  document.getElementById('btnBackupDb').style.display = isAdmin ? 'inline-flex' : 'none';
+  document.getElementById('btnExportCsv').style.display = canExport ? 'inline-flex' : 'none';
+  document.getElementById('adminRateEditWrap').style.display = isAdmin ? 'flex' : 'none';
+
+  switchView('dashboard');
+  refreshAll();
+}
+
+async function doLogout(silent = false) {
+  if (!silent && token) try { await api('/api/auth/logout', { method: 'POST' }); } catch (e) {}
+  token = ''; currentUser = null; localStorage.removeItem('em_cloud_token');
+  document.getElementById('appShell').classList.remove('visible');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn, .bnav-btn').forEach(b => b.classList.remove('active'));
+  const dBtn = document.getElementById('nav-' + name);
+  const mBtn = document.getElementById('bnav-' + name);
+  if (dBtn) dBtn.classList.add('active');
+  if (mBtn) mBtn.classList.add('active');
+  const map = { dashboard: 'nav_dashboard', pos: 'nav_pos', finance: 'nav_finance', inventory: 'nav_inventory', users: 'nav_users' };
+  document.getElementById('pageTitle').textContent = `⚡ ${t('brand_name')} — ${t(map[name] || 'nav_dashboard')}`;
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+
+async function refreshAll() {
+  if (!currentUser) return;
+  try {
+    const [dash, prods, insts, pays, users] = await Promise.all([
+      api('/api/dashboard'), api('/api/products'), api('/api/installments'), api('/api/payments'),
+      currentUser.role === 'admin' ? api('/api/users') : Promise.resolve([])
+    ]);
+    state.dashboard = dash; state.products = prods; state.installments = insts; state.payments = pays; state.users = users;
+    if (dash.exchange_rate && dash.exchange_rate.rate) state.usdRate = dash.exchange_rate.rate;
+    renderDashboard(); renderPosProducts(); renderCart(); renderFinance(); renderAdmin(); renderUsers();
+  } catch (err) { showToast(err.message); }
+}
+
+function downloadBackup() { window.location.href = `/api/backup?token=${encodeURIComponent(token)}`; }
+function downloadCsv() { window.location.href = `/api/payments/export?token=${encodeURIComponent(token)}`; }
+
+/* ==================== CLIENT-SIDE LIVE USD/SDG RATE (CLOUD-SAFE) ==================== */
+async function fetchLiveRate() {
+  try {
+    const resp = await fetch('https://open.er-api.com/v6/latest/USD');
+    const json = await resp.json();
+    const sdg = json && json.rates && json.rates.SDG;
+    if (!sdg) throw new Error('SDG rate unavailable');
+    const saved = await api('/api/rate', { method: 'PUT', body: JSON.stringify({ rate: sdg, source: 'Live Online API' }) });
+    state.usdRate = saved.rate;
+    if (state.dashboard) state.dashboard.exchange_rate = saved;
+    renderDashboard();
+    showToast(lang === 'ar' ? `تم تحديث السعر المباشر: 1$ = ${saved.rate} ج.س` : `Live rate updated: 1 USD = ${saved.rate} SDG`);
+  } catch (err) {
+    showToast(lang === 'ar' ? 'تعذر جلب السعر المباشر — يتم استخدام السعر المحفوظ' : 'Could not fetch live rate; using saved rate.');
+  }
+}
+
+async function saveManualRate() {
+  const val = Number(document.getElementById('manualRateInput').value);
+  if (!val || val <= 0) return showToast(lang === 'ar' ? 'أدخل سعر صرف صحيح' : 'Enter a valid rate');
+  try {
+    const info = await api('/api/rate', { method: 'PUT', body: JSON.stringify({ rate: val, source: 'Manual (Admin)' }) });
+    state.usdRate = info.rate;
+    if (state.dashboard) state.dashboard.exchange_rate = info;
+    document.getElementById('manualRateInput').value = '';
+    renderDashboard();
+    showToast(lang === 'ar' ? `تم حفظ السعر: 1$ = ${info.rate} ج.س` : `Rate saved: 1 USD = ${info.rate} SDG`);
+  } catch (err) { showToast(err.message); }
+}
+
+function convertFromUsd() { document.getElementById('convSdg').value = Math.round(Number(document.getElementById('convUsd').value || 0) * (state.usdRate || 601.5)); }
+function convertFromSdg() { document.getElementById('convUsd').value = (Number(document.getElementById('convSdg').value || 0) / (state.usdRate || 601.5)).toFixed(2); }
+
+/* ==================== DASHBOARD ==================== */
+function renderDashboard() {
+  const d = state.dashboard;
+  if (!d) return;
+  const k = d.kpis;
+  const r = d.exchange_rate || { rate: 601.5, source: 'Saved', updated_at: '' };
+  state.usdRate = r.rate;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="card"><div class="kpi-label">${t('kpi_sales')}</div><div class="kpi-val">${fmt(k.total_sales)}</div><div class="kpi-sub">≈ ${fmtUsd(k.total_sales)} • ${k.sales_count}</div></div>
+    <div class="card"><div class="kpi-label">${t('kpi_collected')}</div><div class="kpi-val" style="color:var(--success);">${fmt(k.total_collected)}</div><div class="kpi-sub">≈ ${fmtUsd(k.total_collected)}</div></div>
+    <div class="card"><div class="kpi-label">${t('kpi_receivable')}</div><div class="kpi-val" style="color:var(--warning);">${fmt(k.outstanding)}</div><div class="kpi-sub">≈ ${fmtUsd(k.outstanding)} • ${k.active_contracts}</div></div>
+    <div class="card"><div class="kpi-label">${t('kpi_stock')}</div><div class="kpi-val" style="color:#4f46e5;">${fmt(k.stock_value)}</div><div class="kpi-sub">≈ ${fmtUsd(k.stock_value)}</div></div>
+    <div class="card"><div class="kpi-label">${t('kpi_low')}</div><div class="kpi-val" style="color:${k.low_stock_count > 0 ? 'var(--danger)' : 'var(--success)'};">${k.low_stock_count}</div><div class="kpi-sub">≤ 3 units</div></div>
+  `;
+
+  document.getElementById('liveRateDisplay').textContent = `1 USD = ${Number(r.rate).toLocaleString('en-US')} ${lang==='ar'?'ج.س':'SDG'}`;
+  document.getElementById('rateSourceBadge').textContent = r.source || 'Saved';
+  document.getElementById('rateUpdatedMeta').textContent = (lang === 'ar' ? 'آخر تحديث: ' : 'Updated: ') + (r.updated_at || '-');
+  convertFromUsd();
+
+  const lowEl = document.getElementById('lowStockList');
+  lowEl.innerHTML = d.low_stock.length ? d.low_stock.map(i => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span><strong>${i.sku}</strong> — ${i.name}</span>
+      <span class="badge ${i.stock===0?'b-red':'b-amber'}">${i.stock}</span>
+    </div>
+  `).join('') : `<span class="badge b-green">${lang==='ar'?'المخزون بحالة جيدة':'All stock healthy'}</span>`;
+
+  document.getElementById('recentSalesBody').innerHTML = d.recent_sales.length ? d.recent_sales.map(s => `
+    <tr>
+      <td><strong>${s.invoice_no}</strong></td><td>${s.created_at}</td><td>${s.customer_name}</td>
+      <td><span class="badge b-purple">${s.created_by_name}</span></td>
+      <td><span class="badge ${s.sale_type==='FULL'?'b-green':'b-amber'}">${s.sale_type}</span></td>
+      <td><strong>${fmt(s.total_amount)}</strong></td><td>${fmt(s.amount_paid)}</td><td>${fmt(s.remaining_amount)}</td>
+      <td><span class="badge b-blue">${bankLabel(s.payment_method)}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewReceipt(${s.id})">${t('view_btn')}</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:18px;">${lang==='ar'?'لا توجد فواتير بعد':'No invoices yet.'}</td></tr>`;
+}
+
+/* ==================== POS ==================== */
+function renderPosProducts() {
+  const q = (document.getElementById('posSearch').value || '').toLowerCase();
+  const cat = document.getElementById('posCatFilter').value;
+  const list = state.products.filter(p => (cat === 'ALL' || p.category === cat) && (p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)));
+  document.getElementById('posProdGrid').innerHTML = list.map(p => `
+    <div class="prod-card">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--muted);font-weight:700;">${p.sku}</span>
+          <span class="badge ${p.stock===0?'b-red':p.stock<=3?'b-amber':'b-green'}">${p.stock}</span>
+        </div>
+        <div class="prod-name">${p.name}</div>
+      </div>
+      <div>
+        <div class="prod-price">${fmt(p.sell_price)}</div>
+        <button class="btn btn-primary btn-sm" style="width:100%;" ${p.stock===0?'disabled':''} onclick="addToCart(${p.id})">
+          ${p.stock===0 ? (lang==='ar'?'نفد':'Out') : (lang==='ar'?'+ إضافة':'+ Add')}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(pid) {
+  const prod = state.products.find(p => p.id === pid);
+  if (!prod) return;
+  const ex = state.cart.find(c => c.product_id === pid);
+  if ((ex ? ex.qty : 0) + 1 > prod.stock) return showToast(lang==='ar'?'الكمية غير متوفرة':'Exceeds stock.');
+  if (ex) ex.qty += 1;
+  else state.cart.push({ product_id: pid, name: prod.name, unit_price: prod.sell_price, qty: 1 });
+  renderCart();
+  showToast(lang==='ar'?'تمت الإضافة للسلة':'Added to cart');
+}
+function updateCartQty(idx, d) {
+  const it = state.cart[idx], prod = state.products.find(p => p.id === it.product_id), n = it.qty + d;
+  if (n <= 0) state.cart.splice(idx, 1);
+  else if (prod && n <= prod.stock) it.qty = n;
+  renderCart();
+}
+function clearCart() { state.cart = []; renderCart(); }
+function setSaleMode(m) {
+  state.saleMode = m;
+  document.getElementById('btnModeFull').classList.toggle('active', m === 'FULL');
+  document.getElementById('btnModeInst').classList.toggle('active', m === 'INSTALLMENT');
+  document.getElementById('instBox').style.display = m === 'INSTALLMENT' ? 'block' : 'none';
+  recalcCart();
+}
+function renderCart() {
+  const el = document.getElementById('cartList');
+  el.innerHTML = state.cart.length ? state.cart.map((c, idx) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;">
+      <div style="flex:1;padding-inline-end:8px;"><div style="font-weight:600;">${c.name}</div><div style="font-size:11.5px;color:var(--muted);">${fmt(c.unit_price)} × ${c.qty} = <strong>${fmt(c.unit_price*c.qty)}</strong></div></div>
+      <div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" onclick="updateCartQty(${idx},-1)">-</button><button class="btn btn-outline btn-sm" onclick="updateCartQty(${idx},1)">+</button></div>
+    </div>
+  `).join('') : `<div style="text-align:center;color:var(--muted);padding:12px;font-size:13px;">${lang==='ar'?'السلة فارغة':'Cart is empty.'}</div>`;
+  recalcCart();
+}
+function recalcCart() {
+  const sub = state.cart.reduce((a, c) => a + c.unit_price * c.qty, 0);
+  if (state.saleMode === 'FULL') {
+    document.getElementById('dueLabel').textContent = t('due_full');
+    document.getElementById('dueAmount').textContent = fmt(sub);
+  } else {
+    const mk = Math.max(0, Number(document.getElementById('instMarkup').value || 0));
+    const dn = Math.max(0, Number(document.getElementById('downPay').value || 0));
+    const ct = sub * (1 + mk / 100);
+    document.getElementById('instPreview').textContent = `${lang==='ar'?'العقد':'Contract'}: ${fmt(ct)} | ${lang==='ar'?'المتبقي':'Left'}: ${fmt(Math.max(0, ct - dn))}`;
+    document.getElementById('dueLabel').textContent = t('due_down');
+    document.getElementById('dueAmount').textContent = fmt(dn);
+  }
+}
+
+async function completeSale() {
+  if (!state.cart.length) return showToast(lang==='ar'?'السلة فارغة':'Cart is empty.');
+  const customer_name = document.getElementById('custName').value.trim();
+  if (!customer_name) return showToast(lang==='ar'?'أدخل اسم العميل':'Enter customer name.');
+  try {
+    const sale = await api('/api/sales', {
+      method: 'POST',
+      body: JSON.stringify({
+        customer_name, customer_phone: document.getElementById('custPhone').value.trim(),
+        sale_type: state.saleMode, payment_method: document.getElementById('bankMethod').value,
+        bank_trx: document.getElementById('bankTrx').value.trim(),
+        down_payment: Number(document.getElementById('downPay').value || 0),
+        months: Number(document.getElementById('instMonths').value || 6),
+        markup_pct: Number(document.getElementById('instMarkup').value || 0),
+        items: state.cart.map(c => ({ product_id: c.product_id, qty: c.qty }))
+      })
+    });
+    state.cart = [];
+    document.getElementById('custName').value = ''; document.getElementById('custPhone').value = '';
+    document.getElementById('bankTrx').value = ''; document.getElementById('downPay').value = '0';
+    showToast(`${sale.invoice_no} ✓`);
+    await refreshAll();
+    showReceiptModal(sale);
+  } catch (err) { showToast(err.message); }
+}
+
+async function viewReceipt(sid) { try { showReceiptModal(await api(`/api/sales/${sid}`)); } catch (e) { showToast(e.message); } }
+
+function showReceiptModal(s) {
+  state.lastReceipt = s;
+  const rows = (s.items || []).map(it => `<tr><td>${it.product_name}</td><td style="text-align:center;">${it.qty}</td><td style="text-align:end;">${fmt(it.line_total)}</td></tr>`).join('');
+  document.getElementById('receiptPrintArea').innerHTML = `
+    <div style="text-align:center;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:10px;">
+      <div style="font-size:17px;font-weight:800;">⚡ ${t('brand_name')}</div>
+      <div style="font-size:11.5px;color:var(--muted);">Bankak: 1234567 — الكيتريك موتورز</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:10px;gap:8px;">
+      <div><strong>${t('th_invoice')}:</strong> ${s.invoice_no}<br/><strong>${t('th_customer')}:</strong> ${s.customer_name}<br/><strong>${t('th_issued_by')}:</strong> ${s.created_by_name}</div>
+      <div style="text-align:end;"><strong>${t('th_date')}:</strong> ${s.created_at}<br/><strong>${t('th_bank')}:</strong> ${bankLabel(s.payment_method)}<br/><strong>${t('th_trx')}:</strong> ${s.bank_trx || '-'}</div>
+    </div>
+    <table style="min-width:0;margin-bottom:10px;"><thead><tr><th>${t('th_product')}</th><th style="text-align:center;">Qty</th><th style="text-align:end;">${t('th_total')}</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="border-top:1px solid var(--border);padding-top:8px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;"><span>${t('th_total')}:</span><strong>${fmt(s.total_amount)}</strong></div>
+      <div style="display:flex;justify-content:space-between;color:var(--success);"><span>${t('th_paid')}:</span><strong>${fmt(s.amount_paid)}</strong></div>
+      <div style="display:flex;justify-content:space-between;color:var(--warning);"><span>${t('th_remaining')}:</span><strong>${fmt(s.remaining_amount)}</strong></div>
+    </div>
+  `;
+  openModal('receiptModal');
+}
+
+function shareWhatsApp() {
+  const s = state.lastReceipt;
+  if (!s) return;
+  const text = `⚡ *الكيتريك موتورز*\nفاتورة رقم: ${s.invoice_no}\nالعميل: ${s.customer_name}\nالإجمالي: ${fmt(s.total_amount)}\nالمدفوع (${bankLabel(s.payment_method)}): ${fmt(s.amount_paid)}\nالمتبقي: ${fmt(s.remaining_amount)}\nمحرر الفاتورة: ${s.created_by_name}`;
+  const phone = (s.customer_phone || '').replace(/\D/g, '');
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+/* ==================== FINANCE ==================== */
+function renderFinance() {
+  const fI = document.getElementById('instFilter').value;
+  const insts = state.installments.filter(i => fI === 'ALL' || i.status === fI);
+  document.getElementById('instTableBody').innerHTML = insts.length ? insts.map(i => {
+    const pct = i.total_contract > 0 ? Math.min(100, Math.round((i.paid_amount / i.total_contract) * 100)) : 100;
+    return `
+      <tr>
+        <td><strong>${i.invoice_no}</strong></td><td>${i.customer_name}</td>
+        <td><span class="badge b-purple">${i.created_by_name}</span></td><td>${fmt(i.total_contract)}</td>
+        <td style="min-width:120px;"><div style="font-size:11px;font-weight:700;">${pct}% (${fmt(i.paid_amount)})</div><div class="progress"><div class="progress-bar" style="width:${pct}%;"></div></div></td>
+        <td><strong style="color:var(--warning);">${fmt(i.remaining_amount)}</strong></td>
+        <td><span class="badge ${i.status==='PAID'?'b-green':'b-amber'}">${i.status}</span></td>
+        <td>${i.status==='ACTIVE'?`<button class="btn btn-success btn-sm" onclick="openPayModal(${i.id})">${t('pay_btn')}</button>`:'✓'}</td>
+      </tr>
+    `;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px;">${lang==='ar'?'لا توجد عقود':'No contracts.'}</td></tr>`;
+
+  const fP = document.getElementById('payFilter').value;
+  const pays = state.payments.filter(p => fP === 'ALL' || p.method === fP);
+  document.getElementById('payTableBody').innerHTML = pays.length ? pays.map(p => `
+    <tr>
+      <td>${p.paid_at}</td><td><strong>${p.invoice_no}</strong></td><td>${p.customer_name}</td>
+      <td><span class="badge b-gray">${p.payment_type}</span></td><td><strong>${fmt(p.amount)}</strong></td>
+      <td><span class="badge b-blue">${bankLabel(p.method)}</span></td><td>${p.bank_trx||'-'}</td>
+      <td><span class="badge b-purple">${p.recorded_by_name}</span></td>
+    </tr>
+  `).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px;">${lang==='ar'?'لا توجد مدفوعات':'No payments.'}</td></tr>`;
+}
+
+function openPayModal(id) {
+  const i = state.installments.find(x => x.id === id);
+  if (!i) return;
+  document.getElementById('payInstId').value = id;
+  document.getElementById('payInstRemRaw').value = i.remaining_amount;
+  document.getElementById('payModalInfo').innerHTML = `<strong>${i.customer_name}</strong> (${i.invoice_no})<br/>${t('th_remaining')}: <strong style="color:var(--warning);">${fmt(i.remaining_amount)}</strong>`;
+  document.getElementById('payInstAmt').value = ''; document.getElementById('payInstTrx').value = ''; document.getElementById('payInstNotes').value = '';
+  updateRemainingPreview(); openModal('payModal');
+}
+
+function updateRemainingPreview() {
+  const rem = Number(document.getElementById('payInstRemRaw').value || 0);
+  const amt = Number(document.getElementById('payInstAmt').value || 0);
+  const box = document.getElementById('remPreviewBox');
+  if (amt <= 0) { box.className = 'rem-preview'; box.textContent = `${t('rem_after')} ${fmt(rem)}`; }
+  else if (amt > rem + 0.01) { box.className = 'rem-preview warn'; box.textContent = `${t('rem_over')} (${fmt(rem)})`; }
+  else if (Math.abs(rem - amt) <= 0.01) { box.className = 'rem-preview'; box.textContent = t('rem_zero'); }
+  else { box.className = 'rem-preview'; box.textContent = `${t('rem_after')} ${fmt(rem - amt)}`; }
+}
+
+async function submitInstallmentPayment() {
+  try {
+    const id = document.getElementById('payInstId').value;
+    const upd = await api(`/api/installments/${id}/pay`, {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: Number(document.getElementById('payInstAmt').value || 0),
+        method: document.getElementById('payInstMethod').value,
+        bank_trx: document.getElementById('payInstTrx').value.trim(),
+        notes: document.getElementById('payInstNotes').value.trim() || 'Manual installment payment'
+      })
+    });
+    closeModal('payModal');
+    showToast(lang==='ar' ? `تم الدفع! المتبقي: ${fmt(upd.remaining_amount)}` : `Paid! Left: ${fmt(upd.remaining_amount)}`);
+    await refreshAll();
+  } catch (err) { showToast(err.message); }
+}
+
+/* ==================== ADMIN INVENTORY & USERS ==================== */
+function renderAdmin() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  document.getElementById('adminTableBody').innerHTML = state.products.map(p => `
+    <tr>
+      <td><strong>${p.sku}</strong></td><td>${p.name}</td><td>${p.category}</td>
+      <td>${fmt(p.cost_price)}</td><td><strong>${fmt(p.sell_price)}</strong></td><td><strong>${p.stock}</strong></td>
+      <td><span class="badge ${p.stock===0?'b-red':p.stock<=3?'b-amber':'b-green'}">${p.stock===0?'OUT':p.stock<=3?'LOW':'OK'}</span></td>
+      <td style="display:flex;gap:4px;">
+        <button class="btn btn-outline btn-sm" onclick="restock(${p.id},1)">+1</button>
+        <button class="btn btn-outline btn-sm" onclick="restock(${p.id},5)">+5</button>
+        <button class="btn btn-primary btn-sm" onclick="openProductModal(${p.id})">${lang==='ar'?'تعديل':'Edit'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">${lang==='ar'?'حذف':'Del'}</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openProductModal(pid = null) {
+  const p = pid ? state.products.find(x => x.id === pid) : null;
+  document.getElementById('prodModalTitle').textContent = p ? (lang==='ar'?'تعديل منتج':'Edit Product') : t('add_product');
+  document.getElementById('editProdId').value = p ? p.id : '';
+  document.getElementById('pSku').value = p ? p.sku : ''; document.getElementById('pName').value = p ? p.name : '';
+  document.getElementById('pCat').value = p ? p.category : 'Electric Motors';
+  document.getElementById('pCost').value = p ? p.cost_price : 0; document.getElementById('pSell').value = p ? p.sell_price : 0;
+  document.getElementById('pStock').value = p ? p.stock : 10;
+  openModal('productModal');
+}
+
+async function saveProduct() {
+  const pid = document.getElementById('editProdId').value;
+  const body = JSON.stringify({
+    sku: document.getElementById('pSku').value.trim(), name: document.getElementById('pName').value.trim(),
+    category: document.getElementById('pCat').value, cost_price: Number(document.getElementById('pCost').value||0),
+    sell_price: Number(document.getElementById('pSell').value||0), stock: Number(document.getElementById('pStock').value||0)
+  });
+  try {
+    await api(pid ? `/api/products/${pid}` : '/api/products', { method: pid ? 'PUT' : 'POST', body });
+    closeModal('productModal'); await refreshAll();
+  } catch (e) { showToast(e.message); }
+}
+async function restock(pid, d) { try { await api(`/api/products/${pid}/restock`, { method: 'POST', body: JSON.stringify({ delta: d }) }); await refreshAll(); } catch (e) { showToast(e.message); } }
+async function deleteProduct(pid) { if (!confirm('Delete?')) return; try { await api(`/api/products/${pid}`, { method: 'DELETE' }); await refreshAll(); } catch (e) { showToast(e.message); } }
+
+function renderUsers() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  document.getElementById('usersTableBody').innerHTML = state.users.map(u => `
+    <tr>
+      <td><strong>${u.username}</strong></td><td>${u.full_name}</td>
+      <td><span class="badge ${u.role==='admin'?'b-purple':u.role==='salesman'?'b-blue':'b-amber'}">${roleLabel(u.role)}</span></td>
+      <td><span class="badge ${u.active?'b-green':'b-red'}">${u.active?'Active':'Off'}</span></td><td>${u.created_at}</td>
+      <td style="display:flex;gap:5px;">
+        <button class="btn btn-primary btn-sm" onclick="openUserModal(${u.id})">${lang==='ar'?'تعديل':'Edit'}</button>
+        ${u.id !== currentUser.id ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">${lang==='ar'?'حذف':'Del'}</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal(uid = null) {
+  const u = uid ? state.users.find(x => x.id === uid) : null;
+  document.getElementById('userModalTitle').textContent = u ? (lang==='ar'?'تعديل مستخدم':'Edit User') : t('add_user');
+  document.getElementById('editUserId').value = u ? u.id : '';
+  document.getElementById('uName').value = u ? u.username : ''; document.getElementById('uName').disabled = !!u;
+  document.getElementById('uFull').value = u ? u.full_name : ''; document.getElementById('uRole').value = u ? u.role : 'salesman';
+  document.getElementById('uPass').value = ''; document.getElementById('uActive').value = u ? String(u.active) : '1';
+  openModal('userModal');
+}
+
+async function saveUser() {
+  const uid = document.getElementById('editUserId').value;
+  const body = JSON.stringify({
+    username: document.getElementById('uName').value.trim(), full_name: document.getElementById('uFull').value.trim(),
+    role: document.getElementById('uRole').value, password: document.getElementById('uPass').value,
+    active: document.getElementById('uActive').value === '1'
+  });
+  try {
+    await api(uid ? `/api/users/${uid}` : '/api/users', { method: uid ? 'PUT' : 'POST', body });
+    closeModal('userModal'); await refreshAll();
+  } catch (e) { showToast(e.message); }
+}
+async function deleteUser(uid) { if (!confirm('Delete?')) return; try { await api(`/api/users/${uid}`, { method: 'DELETE' }); await refreshAll(); } catch (e) { showToast(e.message); } }
+
+applyLang();
+tryRestoreSession();
+</script>
+</body>
+</html>
